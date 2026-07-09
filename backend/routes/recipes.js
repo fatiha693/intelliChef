@@ -9,36 +9,8 @@ const MIN_SERVINGS = 1;
 const MAX_SERVINGS = 12;
 const DEFAULT_SERVINGS = 2;
 
-function buildPrompt(ingredients, dietaryPreferences, servings) {
-  const dietaryBlock = dietaryPreferences.length > 0
-    ? `\nDietary requirements the recipes MUST follow: ${dietaryPreferences.join(', ')}.
-Every recipe must comply with ALL of these — do not suggest anything that violates them.
-If a listed ingredient conflicts with a requirement (e.g. cheese when "vegan" is required), leave it out rather than breaking the requirement.\n`
-    : '';
-
-  return `Here is a list of ingredients someone currently has available:
-${JSON.stringify(ingredients)}
-${dietaryBlock}
-Assume every recipe is being cooked for exactly ${servings} serving(s). Scale ingredient
-quantities accordingly and write them with realistic amounts and units (e.g. "2 large eggs",
-"1/2 cup milk", "200g chicken breast") rather than bare ingredient names.
-
-Suggest 3-4 recipes they could realistically make.
-Respond with ONLY a JSON array (no markdown, no extra text) in exactly this shape:
-[
-  {
-    "name": "Recipe name",
-    "usedIngredients": ["quantified items from the list above that this recipe uses, e.g. '2 eggs'"],
-    "additionalIngredients": ["quantified items NOT in the list above that are still needed"],
-    "steps": ["detailed step 1, including cook time/temperature where relevant", "step 2", "..."]
-  }
-]
-
-Rules:
-- "usedIngredients" must only reference items from the provided list (reuse their wording, prefixed with a quantity).
-- "additionalIngredients" must only contain items that are NOT in the provided list.
-- Quantities in both lists must reflect ${servings} serving(s).
-- "steps" should be detailed enough for a home cook to follow without guessing (6-10 steps per recipe), including approximate times and temperatures where relevant.`;
+function sanitizeStringArray(value) {
+  return Array.isArray(value) ? value.filter((v) => typeof v === 'string' && v.trim().length > 0) : [];
 }
 
 function parseServings(rawServings) {
@@ -47,11 +19,72 @@ function parseServings(rawServings) {
   return Math.min(MAX_SERVINGS, Math.max(MIN_SERVINGS, Math.round(parsed)));
 }
 
+function buildPrompt(ingredients, dietaryPreferences, allergies, cuisine, servings) {
+  const dietaryBlock = dietaryPreferences.length > 0
+    ? `\nDietary requirements the recipes MUST follow: ${dietaryPreferences.join(', ')}.
+Every recipe must comply with ALL of these — do not suggest anything that violates them.
+If a listed ingredient conflicts with a requirement (e.g. cheese when "vegan" is required), leave it out rather than breaking the requirement.`
+    : '';
+
+  const allergyBlock = allergies.length > 0
+    ? `\nSTRICT ALLERGY SAFETY (non-negotiable): the recipes MUST NOT contain any of the following
+allergens, in any form or hidden derivative: ${allergies.join(', ')}. This is a safety constraint,
+not a preference — never include these under any circumstances, even if it means leaving out
+one of the available ingredients.`
+    : '';
+
+  const cuisineBlock = cuisine
+    ? `\nPreferred cuisine style: ${cuisine}. Lean the recipes toward this cuisine where realistic
+given the available ingredients.`
+    : '';
+
+  return `Here is a list of ingredients someone currently has available:
+${JSON.stringify(ingredients)}
+${dietaryBlock}${allergyBlock}${cuisineBlock}
+
+Assume every recipe is being cooked for exactly ${servings} serving(s). Scale ingredient
+quantities accordingly and write them with realistic amounts and units (e.g. "2 large eggs",
+"1/2 cup milk", "200g chicken breast") rather than bare ingredient names.
+
+Suggest 3-4 recipes they could realistically make.
+Respond with ONLY a JSON array — no markdown, no commentary before or after it — in exactly
+this shape:
+[
+  {
+    "name": "Recipe name",
+    "cuisine": "Best-fitting cuisine style for this specific recipe, e.g. Italian, Mexican",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 20,
+    "usedIngredients": ["quantified items from the list above that this recipe uses, e.g. '2 eggs'"],
+    "additionalIngredients": ["quantified items NOT in the list above that are still needed"],
+    "allergens": ["allergens actually present in this recipe, e.g. Dairy, Gluten — [] if none"],
+    "steps": ["detailed step 1, including cook time/temperature where relevant", "step 2", "..."],
+    "nutrition": {
+      "calories": 420,
+      "proteinGrams": 28,
+      "carbsGrams": 35,
+      "fatGrams": 18,
+      "fiberGrams": 4
+    }
+  }
+]
+
+Rules:
+- "usedIngredients" must only reference items from the provided list (reuse their wording, prefixed with a quantity).
+- "additionalIngredients" must only contain items that are NOT in the provided list.
+- Quantities in both lists must reflect ${servings} serving(s).
+- "steps" should be detailed enough for a home cook to follow without guessing (6-10 steps per recipe), including approximate times and temperatures where relevant.
+- "prepTimeMinutes" and "cookTimeMinutes" must be realistic integers in minutes.
+- "nutrition" values are per serving, realistic best-effort integer estimates.
+- "allergens" must accurately reflect what's actually in the recipe, independent of any allergy list above.
+- Output ONLY the JSON array described above — no explanation, no markdown fences, nothing outside the array.`;
+}
+
 router.post('/', async (req, res) => {
-  const { ingredients, preferences, servings: rawServings } = req.body;
-  const dietaryPreferences = Array.isArray(preferences)
-    ? preferences.filter((p) => typeof p === 'string' && p.trim().length > 0)
-    : [];
+  const { ingredients, preferences, allergies, cuisine, servings: rawServings } = req.body;
+  const dietaryPreferences = sanitizeStringArray(preferences);
+  const strictAllergies = sanitizeStringArray(allergies);
+  const cuisinePreference = typeof cuisine === 'string' && cuisine.trim().length > 0 ? cuisine.trim() : null;
   const servings = parseServings(rawServings);
 
   if (!Array.isArray(ingredients) || ingredients.length === 0) {
@@ -61,8 +94,10 @@ router.post('/', async (req, res) => {
   try {
     const message = await anthropic.messages.create({
       model: CLAUDE_MODEL,
-      max_tokens: 3072,
-      messages: [{ role: 'user', content: buildPrompt(ingredients, dietaryPreferences, servings) }],
+      max_tokens: 4096,
+      messages: [
+        { role: 'user', content: buildPrompt(ingredients, dietaryPreferences, strictAllergies, cuisinePreference, servings) },
+      ],
     });
 
     const rawText = message.content
@@ -70,7 +105,15 @@ router.post('/', async (req, res) => {
       .map((block) => block.text)
       .join('\n');
 
-    const recipes = extractJson(rawText, []);
+    const recipes = extractJson(rawText, null);
+
+    // A malformed/truncated response used to silently become an empty list,
+    // which read to users as "no recipes" instead of "something went wrong."
+    // Surface it as a retryable error instead.
+    if (!Array.isArray(recipes) || recipes.length === 0) {
+      console.error('Could not parse a recipe list from Claude response:', rawText.slice(0, 800));
+      return res.status(502).json({ error: 'Claude returned an unexpected response — please try again.' });
+    }
 
     const recipesWithImages = await Promise.all(
       recipes.map(async (recipe) => ({

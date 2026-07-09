@@ -1,26 +1,26 @@
 import { useEffect, useState } from 'react';
 
 const TAGLINES = [
-  'Snap a photo. Get real recipes.',
-  'AI-powered ingredient detection.',
-  'Stop wasting food. Start cooking.',
+  'Snap a photo. Get dinner ideas.',
+  'Built for one-thumb cooking.',
+  'Turn leftovers into a plan.',
 ];
 
 const STEPS = [
   {
     icon: '📸',
-    title: 'Snap a photo',
-    description: 'Take a picture of your fridge or pantry shelf.',
+    title: 'Snap',
+    description: 'Take a quick fridge or pantry photo.',
   },
   {
     icon: '✅',
-    title: 'Confirm ingredients',
-    description: "Claude detects what's inside — edit the list if it missed anything.",
+    title: 'Confirm',
+    description: 'Edit the ingredient list if anything is off.',
   },
   {
     icon: '🍽️',
-    title: 'Get recipes',
-    description: 'Receive recipe ideas built around what you already have.',
+    title: 'Cook',
+    description: 'Get recipes that fit what you already have.',
   },
 ];
 
@@ -62,7 +62,7 @@ export default function Welcome({ onStart }) {
         </div>
 
         <div className="welcome-content">
-          <span className="welcome-badge">AI-powered kitchen assistant</span>
+          <span className="welcome-badge">Mobile utility website</span>
           <h1 className="welcome-title">IntelliChef</h1>
           <p className="welcome-tagline" key={taglineIndex}>
             {TAGLINES[taglineIndex]}

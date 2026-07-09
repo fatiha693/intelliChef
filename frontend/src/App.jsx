@@ -3,6 +3,8 @@ import Welcome from './components/Welcome.jsx';
 import ImageUpload from './components/ImageUpload.jsx';
 import IngredientList from './components/IngredientList.jsx';
 import DietaryPreferences from './components/DietaryPreferences.jsx';
+import Allergies from './components/Allergies.jsx';
+import CuisinePreference from './components/CuisinePreference.jsx';
 import PortionSize from './components/PortionSize.jsx';
 import RecipeList from './components/RecipeList.jsx';
 import { detectIngredients, generateRecipes } from './api.js';
@@ -13,10 +15,13 @@ export default function App() {
   const [started, setStarted] = useState(false);
   const [ingredients, setIngredients] = useState(null);
   const [preferences, setPreferences] = useState([]);
+  const [allergies, setAllergies] = useState([]);
+  const [cuisine, setCuisine] = useState(null);
   const [servings, setServings] = useState(DEFAULT_SERVINGS);
   const [recipes, setRecipes] = useState(null);
   const [recipesLoading, setRecipesLoading] = useState(false);
   const [recipesError, setRecipesError] = useState(null);
+  const hasIngredients = Array.isArray(ingredients) && ingredients.length > 0;
 
   async function handleDetect(file) {
     const { ingredients: detected } = await detectIngredients(file);
@@ -29,7 +34,12 @@ export default function App() {
     setRecipesLoading(true);
     setRecipesError(null);
     try {
-      const { recipes: generated } = await generateRecipes(ingredients, preferences, servings);
+      const { recipes: generated } = await generateRecipes(ingredients, {
+        preferences,
+        allergies,
+        cuisine,
+        servings,
+      });
       setRecipes(generated);
     } catch (err) {
       setRecipesError(err.message);
@@ -42,6 +52,8 @@ export default function App() {
     setStarted(false);
     setIngredients(null);
     setPreferences([]);
+    setAllergies([]);
+    setCuisine(null);
     setServings(DEFAULT_SERVINGS);
     setRecipes(null);
     setRecipesError(null);
@@ -53,28 +65,48 @@ export default function App() {
   }
 
   return (
-    <div className="app">
+    <div className="app mobile-shell">
       <header className="app-header">
-        <h1>IntelliChef</h1>
+        <div>
+          <p className="eyebrow">Mobile utility website</p>
+          <h1>IntelliChef</h1>
+          <p className="app-subtitle">
+            Snap a fridge photo, confirm what the AI sees, and get recipes that fit your kitchen.
+          </p>
+        </div>
         <button className="link-button" onClick={handleGoHome}>
-          ← Home
+          Start over
         </button>
       </header>
       <ImageUpload onDetect={handleDetect} />
-      {ingredients && (
+      {hasIngredients && (
+        <div className="scan-summary" aria-label="Current scan summary">
+          <span className="summary-chip">{ingredients.length} ingredients</span>
+          <span className="summary-chip">{preferences.length} preferences</span>
+          <span className="summary-chip">{allergies.length} allergies</span>
+          <span className="summary-chip">Serves {servings}</span>
+        </div>
+      )}
+      {hasIngredients && (
         <>
           <IngredientList ingredients={ingredients} onChange={setIngredients} />
           <DietaryPreferences selected={preferences} onChange={setPreferences} />
+          <Allergies selected={allergies} onChange={setAllergies} />
+          <CuisinePreference selected={cuisine} onChange={setCuisine} />
           <PortionSize servings={servings} onChange={setServings} />
+          {recipesError && <p className="error">{recipesError}</p>}
+        </>
+      )}
+      {hasIngredients && (
+        <div className="action-bar">
           <button
-            className="primary-button"
+            className="primary-button action-button"
             onClick={handleGenerateRecipes}
             disabled={ingredients.length === 0 || recipesLoading}
           >
-            {recipesLoading ? 'Generating Recipes...' : 'Generate Recipes'}
+            {recipesLoading ? 'Generating recipes...' : 'Generate recipes'}
           </button>
-          {recipesError && <p className="error">{recipesError}</p>}
-        </>
+        </div>
       )}
       {recipes && <RecipeList recipes={recipes} />}
     </div>
