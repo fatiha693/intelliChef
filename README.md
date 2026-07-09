@@ -22,6 +22,8 @@ so future changes can stay isolated and easier to commit in smaller pieces.
    copy .env.example .env
    ```
    Edit `.env` and set `ANTHROPIC_API_KEY` to your real key.
+   Optionally set `PEXELS_API_KEY` (free at https://www.pexels.com/api/) so
+   recipe cards show a real photo instead of an icon.
    ```
    npm run dev
    ```

@@ -17,11 +17,11 @@ export async function detectIngredients(imageFile) {
   return res.json(); // { ingredients: string[], raw: string }
 }
 
-export async function generateRecipes(ingredients, preferences = []) {
+export async function generateRecipes(ingredients, preferences = [], servings = 2) {
   const res = await fetch('/api/generate-recipes', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ingredients, preferences }),
+    body: JSON.stringify({ ingredients, preferences, servings }),
   });
 
   if (!res.ok) {

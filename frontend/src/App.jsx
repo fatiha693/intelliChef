@@ -3,13 +3,17 @@ import Welcome from './components/Welcome.jsx';
 import ImageUpload from './components/ImageUpload.jsx';
 import IngredientList from './components/IngredientList.jsx';
 import DietaryPreferences from './components/DietaryPreferences.jsx';
+import PortionSize from './components/PortionSize.jsx';
 import RecipeList from './components/RecipeList.jsx';
 import { detectIngredients, generateRecipes } from './api.js';
+
+const DEFAULT_SERVINGS = 2;
 
 export default function App() {
   const [started, setStarted] = useState(false);
   const [ingredients, setIngredients] = useState(null);
   const [preferences, setPreferences] = useState([]);
+  const [servings, setServings] = useState(DEFAULT_SERVINGS);
   const [recipes, setRecipes] = useState(null);
   const [recipesLoading, setRecipesLoading] = useState(false);
   const [recipesError, setRecipesError] = useState(null);
@@ -25,7 +29,7 @@ export default function App() {
     setRecipesLoading(true);
     setRecipesError(null);
     try {
-      const { recipes: generated } = await generateRecipes(ingredients, preferences);
+      const { recipes: generated } = await generateRecipes(ingredients, preferences, servings);
       setRecipes(generated);
     } catch (err) {
       setRecipesError(err.message);
@@ -38,6 +42,7 @@ export default function App() {
     setStarted(false);
     setIngredients(null);
     setPreferences([]);
+    setServings(DEFAULT_SERVINGS);
     setRecipes(null);
     setRecipesError(null);
     setRecipesLoading(false);
@@ -59,6 +64,8 @@ export default function App() {
       {ingredients && (
         <>
           <IngredientList ingredients={ingredients} onChange={setIngredients} />
+          <DietaryPreferences selected={preferences} onChange={setPreferences} />
+          <PortionSize servings={servings} onChange={setServings} />
           <button
             className="primary-button"
             onClick={handleGenerateRecipes}
