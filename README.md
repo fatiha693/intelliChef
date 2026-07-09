@@ -82,3 +82,64 @@ Each recipe has its own scoped chat interface. When a user sends a message, the 
 **Security consideration:** All Claude API calls happen exclusively on the backend server. The API key required to authenticate with Claude is stored in a server-side `.env` file and is never sent to or accessible from the browser — the frontend only ever communicates with the app's own backend, which then relays requests to Claude on its behalf.
 
 ## Architecture
+
+### How it works, end to end
+
+1. **Upload** — the user selects or drags a photo of their fridge/pantry
+2. **Detection request** — the frontend sends the image to the backend, which forwards it to Claude for vision analysis
+3. **Editable review** — detected ingredients are shown in an editable list
+4. **Preferences** — the user sets dietary restrictions and a cuisine preference
+5. **Recipe generation** — the confirmed ingredients plus preferences are sent to Claude, which returns tailored recipes with nutrition estimates and cooking times
+6. **Recipe interaction** — for any recipe, the user can open its chatbox and ask follow-up questions, with Claude responding using that recipe's specific context
+
+## Getting Started
+
+### Prerequisites
+- Node.js (v18+)
+- An Anthropic API key with available credits ([console](https://console.anthropic.com))
+
+### 1. Backend setup
+```bash
+cd backend
+npm install
+copy .env.example .env
+```
+Edit `.env` and set `ANTHROPIC_API_KEY` to your real key, then:
+```bash
+npm run dev
+```
+Runs on `http://localhost:3001`
+
+### 2. Frontend setup (in a second terminal)
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Runs on `http://localhost:5173` and proxies `/api/*` requests to the backend.
+
+### 3. Use it
+Open `http://localhost:5173`, upload a fridge/pantry photo, detect ingredients, set your dietary restrictions and cuisine preference, generate recipes, and open any recipe's chatbox to ask questions.
+
+## Design Decisions
+
+- **Metadata over file storage** — the app doesn't persist uploaded photos; each image is analyzed once per request and discarded
+- **Editable AI output** — Claude's ingredient detection is treated as a *starting point* the user can correct, not a final answer
+- **Constraint-based generation** — rather than filtering a fixed recipe database, recipes are generated fresh, shaped simultaneously by available ingredients, dietary restrictions, and cuisine preference
+- **Recipe-scoped conversation state** — each recipe's chatbox maintains independent context, so follow-up questions stay grounded in the specific recipe rather than a generic cooking Q&A
+- **No component library or CSS framework** — deliberately kept the frontend dependency-light, prioritizing understanding every line of styling and markup over speed of assembly
+
+## Possible Extensions
+
+- Persist saved recipes, chat history, or ingredient history per user (would require adding authentication and a database)
+- Shopping list generation for missing ingredients across multiple selected recipes
+- Mobile camera capture support for a more native "point and shoot" experience
+- Voice input for the recipe chatbox for hands-free use while cooking
+
+## Author
+
+**fatiha693**
+
+## License
+
+This project is for educational and portfolio purposes.
