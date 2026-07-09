@@ -31,7 +31,7 @@ export default function ImageUpload({ onDetect }) {
     <div className="image-upload">
       <input type="file" accept="image/*" onChange={handleFileChange} />
       {previewUrl && <img src={previewUrl} alt="Preview" className="preview" />}
-      <button onClick={handleSubmit} disabled={!file || loading}>
+      <button className="primary-button" onClick={handleSubmit} disabled={!file || loading}>
         {loading ? 'Analyzing...' : 'Detect Ingredients'}
       </button>
       {error && <p className="error">{error}</p>}

@@ -26,7 +26,9 @@ export default function IngredientList({ ingredients, onChange }) {
         {ingredients.map((item, i) => (
           <li key={i}>
             <input value={item} onChange={(e) => updateItem(i, e.target.value)} />
-            <button onClick={() => removeItem(i)}>Remove</button>
+            <button className="secondary-button" onClick={() => removeItem(i)}>
+              Remove
+            </button>
           </li>
         ))}
       </ul>
@@ -37,7 +39,9 @@ export default function IngredientList({ ingredients, onChange }) {
           onChange={(e) => setNewItem(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && addItem()}
         />
-        <button onClick={addItem}>Add</button>
+        <button className="primary-button" onClick={addItem}>
+          Add
+        </button>
       </div>
     </div>
   );
