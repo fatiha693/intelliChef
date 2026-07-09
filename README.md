@@ -8,6 +8,10 @@ items, and you get an editable ingredient list before generating recipes.
 - `backend/` — Express server. Receives the uploaded image and calls the
   Claude API (this is the only place the Anthropic API key lives).
 - `frontend/` — React (Vite) app. Image upload UI + editable ingredient list.
+- `shared/` — Optional shared code, types, or assets used by both sides.
+
+The front end and back end are already split into separate top-level folders,
+so future changes can stay isolated and easier to commit in smaller pieces.
 
 ## Setup
 
