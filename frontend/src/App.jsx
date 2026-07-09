@@ -32,6 +32,14 @@ export default function App() {
     }
   }
 
+  function handleGoHome() {
+    setStarted(false);
+    setIngredients(null);
+    setRecipes(null);
+    setRecipesError(null);
+    setRecipesLoading(false);
+  }
+
   if (!started) {
     return <Welcome onStart={() => setStarted(true)} />;
   }
@@ -40,7 +48,7 @@ export default function App() {
     <div className="app">
       <header className="app-header">
         <h1>IntelliChef</h1>
-        <button className="link-button" onClick={() => setStarted(false)}>
+        <button className="link-button" onClick={handleGoHome}>
           ← Home
         </button>
       </header>
