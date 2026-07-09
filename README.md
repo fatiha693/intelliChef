@@ -72,7 +72,6 @@ Once the user confirms their ingredient list and selects dietary restrictions an
 - Estimate cooking time
 - Generate concise, step-by-step instructions
 
-This is a good example of using an LLM for constrained generation — rather than filtering a fixed recipe database, Claude generates recipes from scratch that are shaped by multiple simultaneous constraints (ingredients on hand, dietary restriction, cuisine style) in one coherent reasoning pass.
 
 **3. Conversational AI — Per-Recipe Chatbox**
 Each recipe has its own scoped chat interface. When a user sends a message, the backend passes Claude the specific recipe's details (ingredients, instructions) alongside the conversation history and the new message, so responses stay relevant to that recipe specifically — e.g., asking "what can I use instead of heavy cream?" gets an answer grounded in the actual recipe being viewed, not a generic culinary answer. This required maintaining conversation state per recipe rather than a single global chat.
@@ -121,13 +120,6 @@ Runs on `http://localhost:5173` and proxies `/api/*` requests to the backend.
 ### 3. Use it
 Open `http://localhost:5173`, upload a fridge/pantry photo, detect ingredients, set your dietary restrictions and cuisine preference, generate recipes, and open any recipe's chatbox to ask questions.
 
-## Design Decisions
-
-- **Metadata over file storage** — the app doesn't persist uploaded photos; each image is analyzed once per request and discarded
-- **Editable AI output** — Claude's ingredient detection is treated as a *starting point* the user can correct, not a final answer
-- **Constraint-based generation** — rather than filtering a fixed recipe database, recipes are generated fresh, shaped simultaneously by available ingredients, dietary restrictions, and cuisine preference
-- **Recipe-scoped conversation state** — each recipe's chatbox maintains independent context, so follow-up questions stay grounded in the specific recipe rather than a generic cooking Q&A
-- **No component library or CSS framework** — deliberately kept the frontend dependency-light, prioritizing understanding every line of styling and markup over speed of assembly
 
 ## Possible Extensions
 
