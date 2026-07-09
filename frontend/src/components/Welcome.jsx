@@ -62,7 +62,7 @@ export default function Welcome({ onStart }) {
         </div>
 
         <div className="welcome-content">
-          <span className="welcome-badge">Mobile utility website</span>
+          <span className="welcome-badge">IntelliChef</span>
           <h1 className="welcome-title">IntelliChef</h1>
           <p className="welcome-tagline" key={taglineIndex}>
             {TAGLINES[taglineIndex]}

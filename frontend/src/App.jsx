@@ -68,7 +68,7 @@ export default function App() {
     <div className="app mobile-shell">
       <header className="app-header">
         <div>
-          <p className="eyebrow">Mobile utility website</p>
+          <p className="eyebrow">IntelliChef</p>
           <h1>IntelliChef</h1>
           <p className="app-subtitle">
             Snap a fridge photo, confirm what the AI sees, and get recipes that fit your kitchen.
