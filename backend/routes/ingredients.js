@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
 import { anthropic, CLAUDE_MODEL } from '../anthropicClient.js';
+import { extractJson } from '../utils/extractJson.js';
 
 const router = Router();
 
@@ -56,29 +57,11 @@ router.post('/', upload.single('image'), async (req, res) => {
       .map((block) => block.text)
       .join('\n');
 
-    res.json({ ingredients: parseIngredientsFromText(rawText), raw: rawText });
+    res.json({ ingredients: extractJson(rawText, []), raw: rawText });
   } catch (err) {
     console.error('Claude request failed:', err);
     res.status(502).json({ error: 'Failed to analyze image with Claude API.' });
   }
 });
-
-// Claude usually returns clean JSON, but this pulls the array out even if
-// it's wrapped in extra prose, so a slightly off-format reply doesn't 500.
-function parseIngredientsFromText(text) {
-  try {
-    return JSON.parse(text);
-  } catch {
-    const match = text.match(/\[[\s\S]*\]/);
-    if (match) {
-      try {
-        return JSON.parse(match[0]);
-      } catch {
-        // fall through to empty list below
-      }
-    }
-    return [];
-  }
-}
 
 export default router;

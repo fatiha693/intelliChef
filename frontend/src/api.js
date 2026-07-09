@@ -16,3 +16,18 @@ export async function detectIngredients(imageFile) {
 
   return res.json(); // { ingredients: string[], raw: string }
 }
+
+export async function generateRecipes(ingredients) {
+  const res = await fetch('/api/generate-recipes', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ingredients }),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || 'Failed to generate recipes');
+  }
+
+  return res.json(); // { recipes: Recipe[] }
+}

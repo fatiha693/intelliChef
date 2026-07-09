@@ -1,14 +1,33 @@
 import { useState } from 'react';
 import ImageUpload from './components/ImageUpload.jsx';
 import IngredientList from './components/IngredientList.jsx';
-import { detectIngredients } from './api.js';
+import RecipeList from './components/RecipeList.jsx';
+import { detectIngredients, generateRecipes } from './api.js';
 
 export default function App() {
   const [ingredients, setIngredients] = useState(null);
+  const [recipes, setRecipes] = useState(null);
+  const [recipesLoading, setRecipesLoading] = useState(false);
+  const [recipesError, setRecipesError] = useState(null);
 
   async function handleDetect(file) {
     const { ingredients: detected } = await detectIngredients(file);
     setIngredients(detected);
+    setRecipes(null);
+    setRecipesError(null);
+  }
+
+  async function handleGenerateRecipes() {
+    setRecipesLoading(true);
+    setRecipesError(null);
+    try {
+      const { recipes: generated } = await generateRecipes(ingredients);
+      setRecipes(generated);
+    } catch (err) {
+      setRecipesError(err.message);
+    } finally {
+      setRecipesLoading(false);
+    }
   }
 
   return (
@@ -18,12 +37,16 @@ export default function App() {
       {ingredients && (
         <>
           <IngredientList ingredients={ingredients} onChange={setIngredients} />
-          {/* Recipe generation isn't built yet — this is where it will hook in. */}
-          <button disabled title="Coming soon">
-            Generate Recipes
+          <button
+            onClick={handleGenerateRecipes}
+            disabled={ingredients.length === 0 || recipesLoading}
+          >
+            {recipesLoading ? 'Generating Recipes...' : 'Generate Recipes'}
           </button>
+          {recipesError && <p className="error">{recipesError}</p>}
         </>
       )}
+      {recipes && <RecipeList recipes={recipes} />}
     </div>
   );
 }

@@ -44,3 +44,28 @@ body {
 .error {
   color: #c0392b;
 }
+
+.recipe-list {
+  margin-top: 2rem;
+}
+
+.recipe-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.recipe-card h3 {
+  margin-top: 0;
+}
+
+.recipe-section {
+  margin-bottom: 0.75rem;
+}
+
+.recipe-section ul,
+.recipe-section ol {
+  margin: 0.25rem 0 0;
+  padding-left: 1.25rem;
+}
