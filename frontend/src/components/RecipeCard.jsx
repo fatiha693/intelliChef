@@ -1,4 +1,5 @@
 import { recipeEmoji } from '../utils/recipeEmoji.js';
+import RecipeQA from './RecipeQA.jsx';
 
 const NUTRITION_FIELDS = [
   { key: 'calories', label: 'Calories', unit: '' },
@@ -95,6 +96,8 @@ export default function RecipeCard({ recipe }) {
             </div>
           </div>
         )}
+
+        <RecipeQA recipe={recipe} />
       </div>
     </div>
   );

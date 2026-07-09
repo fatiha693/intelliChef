@@ -34,3 +34,18 @@ export async function generateRecipes(
 
   return res.json(); // { recipes: Recipe[] }
 }
+
+export async function askAboutRecipe(recipe, question, history = []) {
+  const res = await fetch('/api/recipe-chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ recipe, question, history }),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || 'Failed to get an answer');
+  }
+
+  return res.json(); // { answer: string }
+}
