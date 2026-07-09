@@ -32,7 +32,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <h1>Fridge to Recipe</h1>
+      <h1>IntelliChef</h1>
       <ImageUpload onDetect={handleDetect} />
       {ingredients && (
         <>

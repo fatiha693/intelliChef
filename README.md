@@ -1,4 +1,4 @@
-# Fridge to Recipe
+# IntelliChef
 
 Upload a photo of your fridge/pantry, Claude's vision API detects the food
 items, and you get an editable ingredient list before generating recipes.
