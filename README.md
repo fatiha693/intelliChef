@@ -1,261 +1,137 @@
-# IntelliChef
+# IntelliChef 🍳
 
-IntelliChef is a mobile-first web app that turns a fridge or pantry photo into dinner ideas in a few taps. It uses Claude Vision to detect ingredients, lets the user review and edit the detected list, applies dietary and allergy preferences, and then generates recipe suggestions with practical instructions, nutrition estimates, and follow-up recipe Q&A.
+An AI-powered web app that turns a photo of your fridge or pantry into ready-to-cook recipe suggestions — complete with nutrition estimates, dietary filtering, cuisine preferences, and a built-in AI chat assistant for each recipe.
 
-The app is designed to feel like a utility you would actually use on a phone: quick camera capture, large touch targets, concise steps, and a responsive layout that also works well on a laptop.
+## Overview
 
-## What It Does
+Most recipe apps require you to manually search or type in ingredients one by one. IntelliChef removes that friction entirely — snap a photo of your fridge, and Claude's multimodal vision capability identifies the food items automatically. From there, you get a fully editable ingredient list, tailored recipe suggestions based on your dietary needs and cuisine preferences, and an AI chatbox for each recipe so you can ask follow-up questions, request substitutions, or get clarification while cooking.
 
-- Captures a fridge or pantry photo from a phone camera or image library.
-- Detects ingredients from the image with Claude Vision.
-- Lets the user edit, add, or remove ingredients before generating recipes.
-- Supports dietary preferences, allergies, cuisine preferences, and serving size.
-- Generates multiple recipe options with time estimates, steps, ingredient usage, and nutrition estimates.
-- Adds recipe images when available and falls back to a visual icon when needed.
-- Includes a recipe Q&A feature so users can ask follow-up questions about a specific recipe.
+This project was built to explore multimodal AI integration in a full-stack web application — specifically, how to combine image understanding, structured reasoning, and conversational AI into a single, practical, user-facing tool rather than treating them as separate demos.
 
-## Why This Project Is Strong For A Resume
+## Features
 
-- End-to-end AI workflow: image input, model inference, structured parsing, and UI rendering.
-- Full-stack architecture with a React frontend and Express backend.
-- Mobile-first UX with direct camera capture and responsive design.
-- Practical product thinking: ingredient editing, dietary controls, and recipe clarification flow.
-- Production-aware setup: environment-based API configuration and separate frontend/backend deployment support.
+- **Photo-based ingredient detection** — upload any fridge/pantry photo and get an automatically generated list of detected food items
+- **Editable ingredient list** — add, remove, or correct any detected item before generating recipes, since AI vision detection isn't always perfect
+- **Dietary restriction filtering** — specify restrictions (e.g., vegetarian, vegan, gluten-free, dairy-free) and recipe suggestions are generated to respect them
+- **Cuisine selection** — choose a preferred cuisine style (e.g., Italian, Bengali, Mexican, Asian) to steer recipe generation toward a specific culinary direction
+- **Nutrition and calorie estimation** — each generated recipe includes an approximate calorie count and nutritional breakdown
+- **Cooking time approximation** — each recipe includes an estimated prep/cook time, so users can filter for something that fits their schedule
+- **AI-generated recipe suggestions** — recipe ideas built around available ingredients, dietary restrictions, and cuisine preference simultaneously, including what additional ingredients (if any) are needed
+- **Per-recipe AI chatbox** — a conversational assistant scoped to each individual recipe, letting users ask questions like "can I substitute butter for oil?" or "how do I know when this is done?" without leaving the recipe view
+- **Secure API key handling** — the Anthropic API key lives only on the backend server; it's never exposed to the browser or the client-side code
 
 ## Tech Stack
 
 ### Frontend
 
-- React 18
-- Vite
-- Modern browser APIs for file upload and camera access
-- CSS-based responsive layout and mobile-first UI
+| Technology | Purpose |
+|---|---|
+| **React** | Core UI library — manages component state and re-renders the interface as ingredients are detected, edited, recipes are generated, and chat conversations progress |
+| **Vite** | Development server and build tool. Chosen over Create React App for its near-instant hot module reload during development and significantly faster build times |
+| **Plain CSS** | Handles all styling — no CSS framework or component library, keeping the bundle size small and giving full control over the visual design |
+| **Fetch API** | Used (via a small wrapper module, `api.js`) to communicate with the backend — no external HTTP client library needed for a project this size |
+
+Key frontend components:
+- `App.jsx` — top-level state management; holds the uploaded image, detected ingredients, user preferences (diet, cuisine), generated recipes, and coordinates data flow between child components
+- `ImageUpload.jsx` — handles file selection/drag-and-drop, image preview, and triggers the detection request
+- `IngredientList.jsx` — renders the editable ingredient list with add/remove functionality
+- **Preference selectors** — dietary restriction and cuisine selection inputs that feed into the recipe generation request
+- **Recipe cards** — display each generated recipe's name, ingredients used/needed, instructions, estimated calories/nutrition, and cooking time
+- **Recipe chatbox** — a per-recipe conversational component that maintains its own message history and lets the user ask follow-up questions about that specific recipe
 
 ### Backend
 
-- Node.js
-- Express
-- Anthropic SDK
-- Multer for image upload handling
-- CORS and environment-based configuration
+| Technology | Purpose |
+|---|---|
+| **Node.js** | JavaScript runtime for the server |
+| **Express** | Minimal web framework used to define the core API routes (ingredient detection, recipe generation, and per-recipe chat) and handle incoming requests/responses |
+| **Anthropic SDK (`@anthropic-ai/sdk`)** | Official Node.js SDK used to communicate with Claude's API — handles authentication, request formatting, and response parsing |
+| **dotenv** | Loads the Anthropic API key from a local `.env` file into the server's environment at runtime, keeping secrets out of source code |
+| **CORS handling** | Configured so the frontend (running on a different port during development) can make requests to the backend without being blocked by the browser |
 
-### External Services
+Key backend files:
+- `server.js` — the Express app entry point; sets up middleware and mounts the API routes
+- `anthropicClient.js` — a small wrapper around the Anthropic SDK client, initialized once with the API key, and reused across all routes
+- `routes/` — contains the core endpoints:
+  - **Ingredient detection route** — accepts an uploaded image, encodes it, and sends it to Claude with a prompt asking it to identify visible food items, then returns a structured list
+  - **Recipe generation route** — accepts the confirmed ingredient list plus dietary restrictions and cuisine preference, and sends it to Claude with a prompt asking for tailored recipe suggestions, then returns structured recipe data (name, ingredients used, ingredients needed, instructions, estimated calories/nutrition, estimated cooking time)
+  - **Recipe chat route** — accepts a specific recipe's context plus the user's message and conversation history, and sends it to Claude to generate a contextual, recipe-scoped response
 
-- Claude Vision / Anthropic API for ingredient detection and recipe generation
-- Pexels API for recipe photos when available
+## How Claude Was Used
 
-## Architecture Overview
+Claude powers every AI capability in the app, called from the backend via the Anthropic API:
 
-The project is split into two main parts:
+**1. Vision — Ingredient Detection**
+When a user uploads a photo, the backend sends the image directly to Claude as base64-encoded image data, alongside a text prompt instructing it to identify and list all visible food items. Claude's multimodal capability — processing both images and text in a single request — means no separate computer vision model or object detection pipeline was needed.
 
-- `frontend/` handles the user experience, photo capture, ingredient editing, and recipe display.
-- `backend/` receives image uploads, calls the model APIs, parses structured JSON responses, and returns clean data to the frontend.
-- `shared/` is reserved for any future shared helpers or constants.
+**2. Structured Reasoning — Recipe Generation**
+Once the user confirms their ingredient list and selects dietary restrictions and a cuisine preference, all of this is sent to Claude in a single prompt asking it to generate recipe suggestions that satisfy every constraint simultaneously. Claude reasons over the ingredient list, dietary rules, and cuisine style together to:
+- Suggest recipes that make sense given what's available and permitted
+- Distinguish between ingredients the user already has versus ones they'd need to buy
+- Estimate calorie count and nutritional breakdown per recipe
+- Estimate cooking time
+- Generate concise, step-by-step instructions
 
-### Data Flow
 
-1. The user opens the app and takes a photo or uploads one from the library.
-2. The frontend sends the image to the backend.
-3. The backend forwards the image to Claude Vision and extracts ingredients.
-4. The frontend displays the ingredient list for review and editing.
-5. The user sets dietary preferences, allergies, cuisine, and servings.
-6. The backend generates recipe suggestions.
-7. The frontend renders the recipes with images, nutrition, and Q&A.
+**3. Conversational AI — Per-Recipe Chatbox**
+Each recipe has its own scoped chat interface. When a user sends a message, the backend passes Claude the specific recipe's details (ingredients, instructions) alongside the conversation history and the new message, so responses stay relevant to that recipe specifically — e.g., asking "what can I use instead of heavy cream?" gets an answer grounded in the actual recipe being viewed, not a generic culinary answer. This required maintaining conversation state per recipe rather than a single global chat.
 
-## Features
+**Why detection and recipe generation are separate calls, but preferences and generation are combined:** Ingredient detection is intentionally isolated as its own step so the user has a checkpoint to correct any misread ingredients before that data is used further — an error here would otherwise silently propagate into every recipe. Dietary restrictions and cuisine preference, on the other hand, are combined into the same call as recipe generation itself, since they're constraints on the *same* generation task rather than a separate concern to isolate.
 
-### Mobile-First Camera Flow
+**Security consideration:** All Claude API calls happen exclusively on the backend server. The API key required to authenticate with Claude is stored in a server-side `.env` file and is never sent to or accessible from the browser — the frontend only ever communicates with the app's own backend, which then relays requests to Claude on its behalf.
 
-- Direct camera capture on supported phones.
-- Library upload fallback for users who prefer selecting an existing photo.
-- Preview before scanning.
-- Large buttons and compact card-based layout for small screens.
+## Architecture
 
-### Ingredient Review
+### How it works, end to end
 
-- Editable ingredient list after detection.
-- Add/remove items before generating recipes.
-- Helps correct imperfect AI detection before moving forward.
+1. **Upload** — the user selects or drags a photo of their fridge/pantry
+2. **Detection request** — the frontend sends the image to the backend, which forwards it to Claude for vision analysis
+3. **Editable review** — detected ingredients are shown in an editable list
+4. **Preferences** — the user sets dietary restrictions and a cuisine preference
+5. **Recipe generation** — the confirmed ingredients plus preferences are sent to Claude, which returns tailored recipes with nutrition estimates and cooking times
+6. **Recipe interaction** — for any recipe, the user can open its chatbox and ask follow-up questions, with Claude responding using that recipe's specific context
 
-### Personalized Recipe Generation
+## Getting Started
 
-- Dietary preferences such as vegan, vegetarian, gluten-free, keto, and more.
-- Allergy filtering for safer recipe suggestions.
-- Cuisine preference selection.
-- Adjustable serving count.
+### Prerequisites
+- Node.js (v18+)
+- An Anthropic API key with available credits ([console](https://console.anthropic.com))
 
-### Recipe Output
-
-- Recipe name and cuisine.
-- Prep time, cook time, and total time.
-- Used ingredients and additional ingredients.
-- Step-by-step instructions.
-- Estimated nutrition per serving.
-- Recipe images when available.
-- Fallback icons when no image is found.
-
-### Recipe Q&A
-
-- Ask follow-up questions about a specific recipe.
-- Useful for substitutions, technique questions, or small adjustments.
-
-## Repository Structure
-
-```text
-README.md
-backend/
-  package.json
-  server.js
-  anthropicClient.js
-  pexelsClient.js
-  routes/
-    ingredients.js
-    recipes.js
-    recipeChat.js
-  utils/
-    extractJson.js
-frontend/
-  package.json
-  vite.config.js
-  vercel.json
-  src/
-    App.jsx
-    api.js
-    index.css
-    main.jsx
-    components/
-      Allergies.jsx
-      CuisinePreference.jsx
-      DietaryPreferences.jsx
-      ImageUpload.jsx
-      IngredientList.jsx
-      PortionSize.jsx
-      RecipeCard.jsx
-      RecipeList.jsx
-      RecipeQA.jsx
-      Welcome.jsx
-    utils/
-      recipeEmoji.js
-shared/
-```
-
-## Local Development Setup
-
-### 1. Install Dependencies
-
-Open two terminals and run:
-
+### 1. Backend setup
 ```bash
 cd backend
 npm install
+copy .env.example .env
 ```
+Edit `.env` and set `ANTHROPIC_API_KEY` to your real key, then:
+```bash
+npm run dev
+```
+Runs on `http://localhost:3001`
 
+### 2. Frontend setup (in a second terminal)
 ```bash
 cd frontend
 npm install
-```
-
-### 2. Configure Environment Variables
-
-Copy the example backend environment file and fill in your keys:
-
-```bash
-cd backend
-copy .env.example .env
-```
-
-Set the following values in `backend/.env`:
-
-- `ANTHROPIC_API_KEY` — required
-- `ANTHROPIC_MODEL` — defaults to `claude-sonnet-5`
-- `PEXELS_API_KEY` — optional, for recipe photos
-- `FRONTEND_URL` — optional during local development
-
-For the frontend, you can leave `VITE_API_BASE_URL` empty locally. If you want to set it explicitly, copy the example file:
-
-```bash
-cd frontend
-copy .env.example .env
-```
-
-### 3. Start The Backend
-
-```bash
-cd backend
 npm run dev
 ```
+Runs on `http://localhost:5173` and proxies `/api/*` requests to the backend.
 
-The backend runs on `http://localhost:3001`.
+### 3. Use it
+Open `http://localhost:5173`, upload a fridge/pantry photo, detect ingredients, set your dietary restrictions and cuisine preference, generate recipes, and open any recipe's chatbox to ask questions.
 
-### 4. Start The Frontend
 
-```bash
-cd frontend
-npm run dev
-```
+## Possible Extensions
 
-The frontend runs on `http://localhost:5173`.
+- Persist saved recipes, chat history, or ingredient history per user (would require adding authentication and a database)
+- Shopping list generation for missing ingredients across multiple selected recipes
+- Mobile camera capture support for a more native "point and shoot" experience
+- Voice input for the recipe chatbox for hands-free use while cooking
 
-## How To Use The App
+## Author
 
-1. Open the frontend in your browser.
-2. Tap **Use camera** to take a new photo or **Upload from library** to choose an existing one.
-3. Review the detected ingredients.
-4. Edit the list if needed.
-5. Choose dietary preferences, allergies, cuisine, and servings.
-6. Generate recipes.
-7. Open a recipe to review the ingredients, steps, nutrition, and Q&A.
-
-## Environment Variables
-
-### Backend
-
-```env
-ANTHROPIC_API_KEY=your_api_key_here
-ANTHROPIC_MODEL=claude-sonnet-5
-PEXELS_API_KEY=your_pexels_api_key_here
-PORT=3001
-FRONTEND_URL=http://localhost:5173
-```
-
-### Frontend
-
-```env
-VITE_API_BASE_URL=
-```
-
-Leave `VITE_API_BASE_URL` blank for local development. Set it to your deployed backend URL when you are ready to go live.
-
-## Deployment Notes
-
-Deployment is intentionally left for later, but the codebase is already structured for it:
-
-- Frontend can be deployed on Vercel.
-- Backend can be deployed separately on Render, Railway, Fly.io, or a similar Node host.
-- The frontend reads the backend URL from `VITE_API_BASE_URL`.
-- The backend accepts allowed frontend origins through `FRONTEND_URL`.
-
-## Validation
-
-These checks have been used during development:
-
-- Frontend production build with Vite
-- Backend syntax checks with Node
-
-## Resume Summary
-
-If you need a short resume description, you could use:
-
-> Built IntelliChef, a mobile-first full-stack web app that uses Claude Vision to detect fridge ingredients from a photo, supports dietary and allergy preferences, and generates personalized recipes with steps, nutrition estimates, and recipe Q&A.
-
-## Future Improvements
-
-- Persist user history and saved recipes.
-- Add authentication and profile-based dietary preferences.
-- Support multi-photo scans or pantry grouping.
-- Expand recipe Q&A into a richer cooking assistant.
-- Add deployment monitoring and analytics.
+**fatiha693**
 
 ## License
 
-No license has been added yet.
+This project is for educational and portfolio purposes.
