@@ -140,6 +140,7 @@ export default function ImageUpload({ onDetect }) {
         id="fridge-library-photo"
         type="file"
         accept="image/*"
+        capture="environment"
         onChange={handleFileChange}
         className="visually-hidden"
       />

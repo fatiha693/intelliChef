@@ -65,49 +65,119 @@ export default function App() {
   }
 
   return (
-    <div className="app mobile-shell">
-      <header className="app-header">
-        <div>
-          <p className="eyebrow">IntelliChef</p>
-          <h1>IntelliChef</h1>
-          <p className="app-subtitle">
-            Snap a fridge photo, confirm what the AI sees, and get recipes that fit your kitchen.
-          </p>
+    <div className="app workspace-shell">
+      <header className="workspace-header">
+        <div className="brand-lockup">
+          <span className="brand-mark" aria-hidden="true">
+            IC
+          </span>
+          <div>
+            <p className="eyebrow">AI kitchen assistant</p>
+            <h1>IntelliChef</h1>
+          </div>
         </div>
-        <button className="link-button" onClick={handleGoHome}>
-          Start over
+        <button className="ghost-button" onClick={handleGoHome}>
+          Reset
         </button>
       </header>
-      <ImageUpload onDetect={handleDetect} />
-      {hasIngredients && (
-        <div className="scan-summary" aria-label="Current scan summary">
-          <span className="summary-chip">{ingredients.length} ingredients</span>
-          <span className="summary-chip">{preferences.length} preferences</span>
-          <span className="summary-chip">{allergies.length} allergies</span>
-          <span className="summary-chip">Serves {servings}</span>
+
+      <section className="workspace-banner">
+        <div>
+          <p className="workspace-kicker">Scan, refine, cook</p>
+          <h2>Turn a single photo into a dinner plan.</h2>
+          <p>
+            Start with a fridge shot, clean up the ingredient list, then generate recipes that fit your pantry,
+            diet, and portions.
+          </p>
         </div>
-      )}
-      {hasIngredients && (
-        <>
-          <IngredientList ingredients={ingredients} onChange={setIngredients} />
-          <DietaryPreferences selected={preferences} onChange={setPreferences} />
-          <Allergies selected={allergies} onChange={setAllergies} />
-          <CuisinePreference selected={cuisine} onChange={setCuisine} />
-          <PortionSize servings={servings} onChange={setServings} />
-          {recipesError && <p className="error">{recipesError}</p>}
-        </>
-      )}
-      {hasIngredients && (
-        <div className="action-bar">
-          <button
-            className="primary-button action-button"
-            onClick={handleGenerateRecipes}
-            disabled={ingredients.length === 0 || recipesLoading}
-          >
-            {recipesLoading ? 'Generating recipes...' : 'Generate recipes'}
-          </button>
+        <div className="workspace-stats" aria-label="Current scan summary">
+          <div className="stat-card">
+            <strong>{hasIngredients ? ingredients.length : 0}</strong>
+            <span>Ingredients</span>
+          </div>
+          <div className="stat-card">
+            <strong>{preferences.length}</strong>
+            <span>Preferences</span>
+          </div>
+          <div className="stat-card">
+            <strong>{allergies.length}</strong>
+            <span>Allergies</span>
+          </div>
+          <div className="stat-card">
+            <strong>{servings}</strong>
+            <span>Servings</span>
+          </div>
         </div>
-      )}
+      </section>
+
+      <div className="workspace-grid">
+        <section className="panel panel-primary">
+          <div className="panel-heading">
+            <span className="panel-step">1</span>
+            <div>
+              <p className="panel-label">Capture</p>
+              <h2>Start with a photo</h2>
+            </div>
+          </div>
+          <ImageUpload onDetect={handleDetect} />
+        </section>
+
+        <section className="panel panel-secondary">
+          <div className="panel-heading">
+            <span className="panel-step">2</span>
+            <div>
+              <p className="panel-label">Refine</p>
+              <h2>Adjust the ingredients and settings</h2>
+            </div>
+          </div>
+
+          {hasIngredients ? (
+            <>
+              <IngredientList ingredients={ingredients} onChange={setIngredients} />
+              <DietaryPreferences selected={preferences} onChange={setPreferences} />
+              <Allergies selected={allergies} onChange={setAllergies} />
+              <CuisinePreference selected={cuisine} onChange={setCuisine} />
+              <PortionSize servings={servings} onChange={setServings} />
+            </>
+          ) : (
+            <div className="empty-state">
+              <p className="empty-title">Nothing scanned yet.</p>
+              <p>Use the photo step to detect ingredients before customizing your meal.</p>
+            </div>
+          )}
+        </section>
+
+        <section className="panel panel-secondary">
+          <div className="panel-heading">
+            <span className="panel-step">3</span>
+            <div>
+              <p className="panel-label">Generate</p>
+              <h2>Get recipes</h2>
+            </div>
+          </div>
+
+          {hasIngredients ? (
+            <>
+              {recipesError && <p className="error">{recipesError}</p>}
+              <div className="action-bar action-bar-inline">
+                <button
+                  className="primary-button action-button"
+                  onClick={handleGenerateRecipes}
+                  disabled={ingredients.length === 0 || recipesLoading}
+                >
+                  {recipesLoading ? 'Generating recipes...' : 'Generate recipes'}
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="empty-state">
+              <p className="empty-title">Ready when you are.</p>
+              <p>Once ingredients are detected, this section will unlock recipe generation.</p>
+            </div>
+          )}
+        </section>
+      </div>
+
       {recipes && <RecipeList recipes={recipes} />}
     </div>
   );
