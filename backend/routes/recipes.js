@@ -19,6 +19,18 @@ function parseServings(rawServings) {
   return Math.min(MAX_SERVINGS, Math.max(MIN_SERVINGS, Math.round(parsed)));
 }
 
+function getClaudeErrorMessage(err, fallbackMessage) {
+  if (typeof err?.message === 'string' && err.message.trim().length > 0) {
+    return err.message;
+  }
+
+  if (typeof err?.error?.message === 'string' && err.error.message.trim().length > 0) {
+    return err.error.message;
+  }
+
+  return fallbackMessage;
+}
+
 function buildPrompt(ingredients, dietaryPreferences, allergies, cuisine, servings) {
   const dietaryBlock = dietaryPreferences.length > 0
     ? `\nDietary requirements the recipes MUST follow: ${dietaryPreferences.join(', ')}.
@@ -84,7 +96,6 @@ async function requestRecipesFromClaude(prompt) {
   const message = await anthropic.messages.create({
     model: CLAUDE_MODEL,
     max_tokens: 4096,
-    temperature: 0.2,
     messages: [{ role: 'user', content: prompt }],
   });
 
@@ -177,7 +188,9 @@ router.post('/', async (req, res) => {
     res.json({ recipes: recipesWithImages });
   } catch (err) {
     console.error('Claude request failed:', err);
-    res.status(502).json({ error: 'Failed to generate recipes with Claude API.' });
+    res.status(502).json({
+      error: getClaudeErrorMessage(err, 'Failed to generate recipes with Claude API.'),
+    });
   }
 });
 

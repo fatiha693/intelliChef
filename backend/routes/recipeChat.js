@@ -5,6 +5,18 @@ const router = Router();
 
 const MAX_HISTORY = 5;
 
+function getClaudeErrorMessage(err, fallbackMessage) {
+  if (typeof err?.message === 'string' && err.message.trim().length > 0) {
+    return err.message;
+  }
+
+  if (typeof err?.error?.message === 'string' && err.error.message.trim().length > 0) {
+    return err.error.message;
+  }
+
+  return fallbackMessage;
+}
+
 function buildPrompt(recipe, question, history) {
   const recipeContext = `Recipe: ${recipe.name || 'Untitled recipe'}
 Cuisine: ${recipe.cuisine || 'n/a'}
@@ -63,7 +75,7 @@ router.post('/', async (req, res) => {
     res.json({ answer });
   } catch (err) {
     console.error('Claude request failed:', err);
-    res.status(502).json({ error: 'Failed to get an answer from Claude.' });
+    res.status(502).json({ error: getClaudeErrorMessage(err, 'Failed to get an answer from Claude.') });
   }
 });
 
