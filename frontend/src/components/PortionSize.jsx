@@ -1,5 +1,5 @@
 const MIN_SERVINGS = 1;
-const MAX_SERVINGS = 12;
+const MAX_SERVINGS = 10;
 
 export default function PortionSize({ servings, onChange }) {
   function adjust(delta) {

@@ -1,18 +1,18 @@
 :root {
-  --color-primary: #6d8b74;
-  --color-primary-dark: #30453b;
-  --color-primary-light: #a7c4b5;
-  --color-bg: #eef2ef;
-  --color-bg-alt: #dfe6e1;
-  --color-surface: #fbfcfb;
-  --color-border: #d3ddd6;
-  --color-text: #1d2a24;
-  --color-text-muted: #5f6f67;
-  --color-danger: #c95d56;
-  --color-danger-dark: #8f3732;
-  --color-danger-bg: #f9e7e5;
-  --shadow-sm: 0 8px 22px rgba(28, 40, 34, 0.08);
-  --shadow-md: 0 16px 36px rgba(28, 40, 34, 0.12);
+  --color-primary: #ff6a00;
+  --color-primary-dark: #cf5300;
+  --color-primary-light: #ffb347;
+  --color-bg: #fff4e8;
+  --color-bg-alt: #fff0df;
+  --color-surface: #fffdfb;
+  --color-border: #ffd7ad;
+  --color-text: #2d1c11;
+  --color-text-muted: #8d6548;
+  --color-danger: #e5484d;
+  --color-danger-dark: #b91c1c;
+  --color-danger-bg: #fdeceb;
+  --shadow-sm: 0 8px 22px rgba(255, 106, 0, 0.12);
+  --shadow-md: 0 16px 36px rgba(255, 106, 0, 0.18);
   --radius: 18px;
 }
 
@@ -22,9 +22,9 @@
 
 html {
   background:
-    radial-gradient(circle at top left, rgba(109, 139, 116, 0.22), transparent 32%),
-    radial-gradient(circle at top right, rgba(167, 196, 181, 0.18), transparent 26%),
-    linear-gradient(180deg, #f4f6f4 0%, #e8eeea 100%);
+    radial-gradient(circle at top left, rgba(255, 106, 0, 0.16), transparent 32%),
+    radial-gradient(circle at top right, rgba(255, 179, 71, 0.18), transparent 26%),
+    linear-gradient(180deg, #fffaf4 0%, #fff0e3 100%);
 }
 
 body {
@@ -59,7 +59,7 @@ button {
 /* ---------- Shared buttons ---------- */
 
 .primary-button {
-  background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary));
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
   color: #fff;
   border: none;
   min-height: 3rem;
@@ -95,7 +95,7 @@ button {
 }
 
 .secondary-button:hover {
-  background: #edf3ef;
+  background: #fff1e3;
 }
 
 .link-button,
@@ -136,7 +136,7 @@ button {
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem 1.1rem;
-  border: 1px solid rgba(211, 221, 214, 0.9);
+  border: 1px solid rgba(255, 215, 173, 0.88);
   border-radius: 28px;
   background: rgba(251, 252, 251, 0.8);
   backdrop-filter: blur(18px);
@@ -193,7 +193,7 @@ button {
 }
 
 .summary-chip {
-  background: #f9fbf9;
+  background: #fff6ee;
   border: 1px solid var(--color-border);
   border-radius: 999px;
   padding: 0.3rem 0.8rem;
@@ -243,7 +243,7 @@ button {
   align-items: center;
   align-items: center;
   gap: 0.5rem;
-  background: #fff5ea;
+  background: #fff3e7;
   border: 2px dashed var(--color-primary-light);
   color: var(--color-primary-dark);
   font-weight: 600;
@@ -255,7 +255,7 @@ button {
 }
 
 .upload-label:hover {
-  background: #ffe9d2;
+  background: #ffe6c9;
   border-color: var(--color-primary);
 }
 
@@ -812,11 +812,11 @@ button {
   grid-template-columns: 1.1fr 0.9fr;
   gap: 1rem;
   align-items: stretch;
-  background: linear-gradient(135deg, rgba(34, 50, 42, 0.98), rgba(76, 96, 84, 0.98));
+  background: linear-gradient(135deg, #ff8d3c, #ff6a00 58%, #ffb347);
   padding: 1.1rem;
   color: #f5f8f6;
   border-radius: 30px;
-  box-shadow: 0 20px 44px rgba(18, 28, 24, 0.18);
+  box-shadow: 0 20px 44px rgba(255, 106, 0, 0.24);
 }
 
 .welcome-copy {
@@ -827,8 +827,8 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   padding: 0.35rem 0.85rem;
   border-radius: 999px;
   font-size: 0.78rem;
@@ -862,13 +862,13 @@ button {
 .welcome-point {
   padding: 0.45rem 0.75rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   font-size: 0.85rem;
 }
 
 .cta-button {
-  background: linear-gradient(135deg, #f3f7f4, #dfe7e2);
+  background: #fff;
   color: var(--color-primary-dark);
   border: none;
   padding: 0.95rem 1.8rem;
@@ -881,7 +881,7 @@ button {
 
 .cta-button:hover {
   transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 16px 34px rgba(14, 18, 16, 0.25);
+  box-shadow: 0 16px 34px rgba(255, 106, 0, 0.22);
 }
 
 .welcome-preview {
@@ -892,8 +892,8 @@ button {
 }
 
 .preview-panel {
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 24px;
   padding: 0.95rem 1rem;
   backdrop-filter: blur(10px);
@@ -936,10 +936,10 @@ button {
 }
 
 .step-card {
-  background: rgba(251, 252, 251, 0.88);
+  background: rgba(255, 251, 247, 0.95);
   border-radius: 24px;
   padding: 1.1rem;
-  border: 1px solid rgba(211, 221, 214, 0.9);
+  border: 1px solid rgba(255, 215, 173, 0.84);
 }
 
 .step-card h3 {
@@ -962,7 +962,7 @@ button {
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  background: var(--color-primary);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
   color: #fff;
   font-weight: 700;
   box-shadow: var(--shadow-sm);

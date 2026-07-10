@@ -14,26 +14,22 @@ export default function Welcome({ onStart }) {
             <div className="welcome-point">Generate recipes</div>
           </div>
           <button className="cta-button" onClick={onStart}>
-            Enter the app
+            Start
           </button>
         </div>
 
         <div className="welcome-preview" aria-hidden="true">
           <div className="preview-panel preview-panel-top">
-            <span>Tonight’s plan</span>
-            <strong>Quick dinner ideas</strong>
+            <span>Scan flow</span>
+            <strong>One photo to begin</strong>
           </div>
           <div className="preview-panel preview-panel-middle">
-            <span>Detected ingredients</span>
-            <div className="preview-stack">
-              <i />
-              <i />
-              <i />
-            </div>
+            <span>Recipe setup</span>
+            <strong>Refine ingredients and filters</strong>
           </div>
           <div className="preview-panel preview-panel-bottom">
-            <span>Recipes ready</span>
-            <strong>3 suggestions</strong>
+            <span>Output</span>
+            <strong>Meals that fit your kitchen</strong>
           </div>
         </div>
       </section>

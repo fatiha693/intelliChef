@@ -6,7 +6,7 @@ import { fetchRecipeImage } from '../pexelsClient.js';
 const router = Router();
 
 const MIN_SERVINGS = 1;
-const MAX_SERVINGS = 12;
+const MAX_SERVINGS = 10;
 const DEFAULT_SERVINGS = 2;
 
 function sanitizeStringArray(value) {
@@ -80,6 +80,50 @@ Rules:
 - Output ONLY the JSON array described above — no explanation, no markdown fences, nothing outside the array.`;
 }
 
+async function requestRecipesFromClaude(prompt) {
+  const message = await anthropic.messages.create({
+    model: CLAUDE_MODEL,
+    max_tokens: 4096,
+    temperature: 0.2,
+    messages: [{ role: 'user', content: prompt }],
+  });
+
+  return message.content
+    .filter((block) => block.type === 'text')
+    .map((block) => block.text)
+    .join('\n');
+}
+
+async function repairRecipeJson(rawText) {
+  const repairPrompt = `Convert the following text into ONLY a valid JSON array of recipe objects matching this shape:
+[
+  {
+    "name": "Recipe name",
+    "cuisine": "Cuisine",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 20,
+    "usedIngredients": ["item"],
+    "additionalIngredients": ["item"],
+    "allergens": ["Dairy"],
+    "steps": ["step 1", "step 2"],
+    "nutrition": {
+      "calories": 420,
+      "proteinGrams": 28,
+      "carbsGrams": 35,
+      "fatGrams": 18,
+      "fiberGrams": 4
+    }
+  }
+]
+
+Return JSON only. No markdown. No explanation.
+
+Text to repair:
+${rawText}`;
+
+  return requestRecipesFromClaude(repairPrompt);
+}
+
 router.post('/', async (req, res) => {
   const { ingredients, preferences, allergies, cuisine, servings: rawServings } = req.body;
   const dietaryPreferences = sanitizeStringArray(preferences);
@@ -92,18 +136,9 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    const message = await anthropic.messages.create({
-      model: CLAUDE_MODEL,
-      max_tokens: 4096,
-      messages: [
-        { role: 'user', content: buildPrompt(ingredients, dietaryPreferences, strictAllergies, cuisinePreference, servings) },
-      ],
-    });
-
-    const rawText = message.content
-      .filter((block) => block.type === 'text')
-      .map((block) => block.text)
-      .join('\n');
+    const rawText = await requestRecipesFromClaude(
+      buildPrompt(ingredients, dietaryPreferences, strictAllergies, cuisinePreference, servings)
+    );
 
     const recipes = extractJson(rawText, null);
 
@@ -111,8 +146,24 @@ router.post('/', async (req, res) => {
     // which read to users as "no recipes" instead of "something went wrong."
     // Surface it as a retryable error instead.
     if (!Array.isArray(recipes) || recipes.length === 0) {
-      console.error('Could not parse a recipe list from Claude response:', rawText.slice(0, 800));
-      return res.status(502).json({ error: 'Claude returned an unexpected response — please try again.' });
+      const repairedText = await repairRecipeJson(rawText.slice(0, 5000));
+      const repairedRecipes = extractJson(repairedText, null);
+
+      if (!Array.isArray(repairedRecipes) || repairedRecipes.length === 0) {
+        console.error('Could not parse a recipe list from Claude response:', rawText.slice(0, 800));
+        console.error('Repair attempt also failed:', repairedText.slice(0, 800));
+        return res.status(502).json({ error: 'Claude returned an unexpected response — please try again.' });
+      }
+
+      const repairedRecipesWithImages = await Promise.all(
+        repairedRecipes.map(async (recipe) => ({
+          ...recipe,
+          servings,
+          imageUrl: recipe?.name ? await fetchRecipeImage(`${recipe.name} food`) : null,
+        }))
+      );
+
+      return res.json({ recipes: repairedRecipesWithImages });
     }
 
     const recipesWithImages = await Promise.all(
