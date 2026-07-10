@@ -18,7 +18,10 @@ export async function fetchRecipeImage(query) {
     if (!res.ok) return null;
 
     const data = await res.json();
-    return data.photos?.[0]?.src?.medium ?? null;
+    const src = data.photos?.[0]?.src;
+    // "medium" (350px wide) looks blurry once stretched to fill a full-width
+    // card, so prefer the larger variants and only fall back if missing.
+    return src?.large2x ?? src?.large ?? src?.medium ?? null;
   } catch (err) {
     console.error('Pexels request failed:', err);
     return null;
