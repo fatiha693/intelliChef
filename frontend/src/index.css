@@ -275,29 +275,11 @@ button {
   line-height: 1.35;
 }
 
-.camera-panel {
-  display: grid;
-  gap: 0.75rem;
-}
-
-.camera-preview {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  max-height: 360px;
-  border-radius: 22px;
-  background: #0f1a16;
-  object-fit: cover;
-  border: 1px solid rgba(109, 139, 116, 0.35);
-}
-
-.camera-actions,
 .upload-post-actions {
   display: flex;
   gap: 0.65rem;
 }
 
-.camera-actions .primary-button,
-.camera-actions .secondary-button,
 .upload-post-actions .secondary-button {
   flex: 1;
 }
@@ -1022,7 +1004,6 @@ button {
   }
 
   .upload-actions,
-  .camera-actions,
   .upload-post-actions {
     grid-template-columns: 1fr;
     flex-direction: column;
