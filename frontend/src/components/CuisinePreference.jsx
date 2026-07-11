@@ -2,6 +2,7 @@ const CUISINES = [
   'Italian',
   'Mexican',
   'Indian',
+  'Bangladeshi',
   'Chinese',
   'Japanese',
   'Thai',
