@@ -1,5 +1,8 @@
 # IntelliChef 🍳
 
+**🔗 Live demo: [intelli-chef-tau.vercel.app](https://intelli-chef-tau.vercel.app)**
+*(hosted on free tiers — the backend spins down after 15 minutes idle, so the first request may take ~30–50s to wake up)*
+
 An AI-powered web app that turns a photo of your fridge or pantry into ready-to-cook recipe suggestions — complete with nutrition estimates, dietary filtering, cuisine preferences, and a built-in AI chat assistant for each recipe.
 
 ## Overview
